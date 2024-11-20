@@ -1,0 +1,10 @@
+fastapi
+pydantic
+keybert
+langchain_huggingface
+spacy
+yake
+transformers
+rake_nltk
+nltk
+indicnlp
