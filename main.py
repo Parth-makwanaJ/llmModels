@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from model.bert import extract_keywords_bert_
 from model.yark import extract_keywords_yake_
 from model.huggingface import keyword_fetch_
+from pathlib import Path
 
 app = FastAPI()
 
@@ -16,6 +19,8 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+views_path = Path(__file__).parent / "views"
+app.mount("/static", StaticFiles(directory=views_path), name="static")
 
 class KeywordRequest(BaseModel):
     article_text: str
@@ -29,6 +34,14 @@ class KeywordRequestHF(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Chale chhe"}
+
+
+@app.get("/index", response_class=HTMLResponse)
+async def read_index():
+    index_file = views_path / "index.html"
+    if index_file.exists():
+        return index_file.read_text()
+    return "<h1>index.html not found</h1>"
 
 
 @app.post("/extract_keywords/")

@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Step 5: Copy the current directory contents into the container
 COPY . .
 
-# Step 6: Install Uvicorn (if not already in requirements.txt)
-RUN pip install uvicorn
+# # Step 6: Install Uvicorn (if not already in requirements.txt)
+# RUN pip install uvicorn
 
 # Step 7: Expose the port your FastAPI app will run on (default is 8000)
 EXPOSE 8000
