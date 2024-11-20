@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #article-text {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            padding: 10px;
+        }
+        #extract-keywords {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #extract-keywords:hover {
+            background-color: #45a049;
+        }
+        #keywords {
+            width: 100%;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #keywords h2 {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #keywords ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #keywords ul li {
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        #model {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-top: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Please Enter Article Here</h1>
+    <select name="model" id="model">
+        <option value="bert">BERT</option>
+        <option value="yake">Yake</option>
+        <option value="huggingface">Huggingface</option>
+    </select>
+    <textarea id="article-text" placeholder="Enter the article text here..."></textarea>
+    <button id="extract-keywords">Extract Keywords</button>
+    <div id="loader"></div>
+    <div id="keywords">
+        <h2>Extracted Keywords:</h2>
+        <ul id="keyword-list"></ul>
+    </div>
+    <script>
+        $("#extract-keywords").click(function(){
+            var articleText = $("#article-text").val();
+            if (!articleText.trim()) {
+                alert("Please enter article text.");
+                return;
+            }
+            
+            $("#loader").show(); // Show loader
+            var url, data;
+            if ($('#model').val() == 'bert') {
+                url = "http://192.168.0.197:8000/extract_keywords_bert";
+                data = JSON.stringify({
+                    article_text: articleText
+                });
+            } else if ($('#model').val() == 'yake') {
+                url = "http://192.168.0.197:8000/extract_keywords_yake";
+                data = JSON.stringify({
+                    article_text: articleText
+                });
+            } else if ($('#model').val() == 'huggingface') {
+                url = "http://192.168.0.197:8000/extract_keywords";
+                data = JSON.stringify({
+                    article_text: articleText,
+                    model_id: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+                    secret_key: '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'
+                });
+            }
+
+            $.ajax({
+                url: url,
+                method: "POST",
+                contentType: "application/json",
+                data: data,
+                success: function(response){
+                    var keywords = response.keywords;
+                    $("#keyword-list").empty();
+                    if ($('#model').val() == 'huggingface') {
+                        var keywords = response.keywords.replace(
+                            "To extract the keywords from the article, we need to identify the most significant and recurring terms that capture the essence of the content. Here are the keywords:", 
+                            ''
+                        );
+                        var keywordListHTML = "<li>" + keywords.split('\n').join("</li><li>") + "</li>";
+                        $("#keyword-list").html(keywordListHTML);
+                    } else {
+                        keywords.forEach(element => {
+                            $("#keyword-list").append("<li>" + element + "</li>");
+                        });
+                    }
+                    $("#loader").hide(); // Hide loader
+                },
+                error: function() {
+                    alert("Error extracting keywords. Please try again.");
+                    $("#loader").hide(); // Hide loader
+                }
+            });
+        });
+    </script>
+</body>
+</html>
