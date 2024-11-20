@@ -8,3 +8,4 @@ transformers
 rake_nltk
 nltk
 indicnlp
+indic-nlp-library
